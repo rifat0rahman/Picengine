@@ -131,7 +131,7 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # for api access domain
-CORS_ORIGIN_WHITELIST = ( 'http://localhost:8080','https://reqbin.com','https://emailforsure.com' )
+CORS_ORIGIN_WHITELIST = ( 'http://localhost:8080','https://picengine.netlify.app','https://emailforsure.com' )
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -143,6 +143,6 @@ REST_FRAMEWORK = {
 
 STRIPE_PUBLIC_KEY = "pk_test_51INwc9Ktmusr7YA2I9UKLZUxqFctZeM2gMpG7O0CwA54ViEK2IZ4NvjbI4JGF60GNpvIb4kZQPum8p1J9IxUzXwM00mXWZHzpg"
 STRIPE_SECRET_KEY = "sk_test_51INwc9Ktmusr7YA2Pr6Z6S3xeY6IAJNnnJ792PyfhaI8yMOqP5kCLWmTDo1TCirzZOEMH0ruiiFqyRYGj8SMBXwq00J1Jqqf7X"
-STRIPE_WEBHOOK_SECRET = "whsec_18qH3Zh2qjeBnYhmMDw35d9J9eIUtfHm"
+STRIPE_WEBHOOK_SECRET = "whsec_SJtvc6VLYjUPjcoSjBUfzXRuGgdDeKk7"
 
 
