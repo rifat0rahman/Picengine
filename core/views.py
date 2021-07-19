@@ -30,7 +30,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 def create_payment(request,id):
     if request.method == 'POST':
         product = Product.objects.get(id=id)
-        YOUR_DOMAIN = "http://localhost:8080/"
+        YOUR_DOMAIN = "https://picengine.netlify.app/"
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[
@@ -50,7 +50,7 @@ def create_payment(request,id):
             },
             mode='payment',
             success_url=YOUR_DOMAIN + 'profile/',
-            cancel_url=YOUR_DOMAIN + '/cancel/',
+            cancel_url=YOUR_DOMAIN + 'deshboard/',
         )
         return JsonResponse({'id': checkout_session.id},status=200)
 
