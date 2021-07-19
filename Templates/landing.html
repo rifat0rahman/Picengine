@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Buy cool new product</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<style>
+    .button {
+        margin: 20px;
+    }
+
+    .button button {
+        border: 2px solid white;
+        background: #000;
+        color: white;
+        padding: 12px;
+        margin: 12px;
+        font-size: 18px;
+        border-radius: 25px;
+        text-decoration: none;
+    }
+
+    .numprocess span {
+        margin: 20px;
+        font-size: 18px;
+    }
+
+    .cols .price b {
+        font-size: 19px !important;
+        position: relative;
+        top: 30%;
+    }
+
+    .cols .price {
+        width: 100px;
+        height: 100px;
+        padding: 5px;
+        margin: auto;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        border-radius: 90px;
+        background: linear-gradient(rgb(253, 187, 65), rgb(255, 145, 0));
+        box-shadow: 2px 2px 2px rgb(223, 222, 222);
+    }
+
+    .cols b {
+        font-size: 22px;
+    }
+
+    .cols {
+        margin: 20px;
+        text-align: center;
+        border: 1px solid rgb(230, 230, 230);
+        padding: 5px;
+        border-radius: 15px;
+        box-shadow: 2px 2px 1px whitesmoke;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 25px;
+        width: 400px;
+        margin: auto;
+        margin-top: 100px;
+    }
+</style>
+
+<body>
+    <section>
+        <div class="product" id="main">
+            <div class="description">
+
+                <div class="cols">
+                    <b>{{ product.name }}</b>
+                    <p>Use the app like a pro!</p>
+                    <div class="price">
+                        <b>${{ product.product_price }}/m</b>
+                    </div>
+                    <div class="numprocess">
+                        <span>Number of downloads</span><br>
+                        <b>150</b><br>
+                        <span>Features Limit</span><br>
+                        <b>Limited</b>
+                    </div>
+                    <div class="button">
+                        <span>{{error}}</span>
+                        <button type="button" id="checkout-button">Pay With Stripe</button>
+                    </div>
+                </div>
+                <h3></h3>
+                <h5></h5>
+            </div>
+            
+        </div>
+
+        <div id="wait">
+
+        </div>
+    </section>
+    {% csrf_token %}
+</body>
+<script type="text/javascript">
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Create an instance of the Stripe object with your publishable API key
+    var stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+    var checkoutButton = document.getElementById("checkout-button");
+
+    checkoutButton.addEventListener("click", function () {
+        // my config
+        var wait = document.getElementById("wait");
+        wait.innerHTML = 'Please wait a second....';
+        document.getElementById("main").innerHTML = '';
+
+        fetch("{% url 'stripe' product.id %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+            .then(function (response) {
+                console.log(response)
+                localStorage.setItem('res', response)
+                return response.json();
+            })
+            .then(function (session) {
+                return stripe.redirectToCheckout({ sessionId: session.id });
+            })
+            .then(function (result) {
+                // If redirectToCheckout fails due to a browser or network
+                // error, you should display the localized error message to your
+                // customer using error.message.
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            })
+            .catch(function (error) {
+                console.error("Error:", error);
+            });
+    });
+
+</script>
+
+</html>
