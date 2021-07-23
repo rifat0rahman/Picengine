@@ -1,7 +1,15 @@
 
 from django.db import models
-from django.contrib.auth.models import  User
+from django.contrib.auth.models import  AbstractUser, User
 # Create your models here.
+
+
+# return email instead of username here
+def get_email(self):
+    return self.email
+
+User.add_to_class("__str__", get_email)
+
 
 TYPE = (
     ("3", "premium"),
@@ -12,10 +20,11 @@ TYPE = (
 
 class Consumers(models.Model):
     user = models.ForeignKey(User,related_name="userstatus",on_delete=models.CASCADE)
-    paid = models.BooleanField(default=False)
     accountType = models.CharField(max_length=50,choices=TYPE,default='FREE')
     acessOnseo = models.BooleanField(default=False)
     acessOngen = models.BooleanField(default=True)
+    free_image_count = models.IntegerField(default=0)
+    premium_image_count = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

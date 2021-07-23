@@ -1,4 +1,5 @@
 
+from os import execlp
 from django.contrib.auth.backends import RemoteUserBackend
 from django.shortcuts import render
 from rest_framework import response, serializers
@@ -113,7 +114,6 @@ def my_webhook_view(request):
 
 
 
-
 @api_view(['GET'])
 def home(request):
     endpoints = {
@@ -168,6 +168,37 @@ def registration(request):
         return Response({'user':user.email})
 
 
+# change password
+@api_view(['POST'])
+def change_password(request):
+    if request.method == 'POST':
+        print(request.data)
+        token = request.data['user']
+        old_password = request.data['old_pass']
+        new_pass1 = request.data['new_pass']
+        new_pass2 = request.data['ag_new_pass']
+        user = User.objects.get(email=token)
+        
+        if new_pass1 != new_pass2:
+            return Response({'status':'new passwords should match'},status=status.HTTP_406_NOT_ACCEPTABLE)
+        
+        if len(new_pass1) < 6:
+            return Response({'status':'passwords should be upto 6 latters'},status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+        change = authenticate(username=user.username,password=old_password)
+        if change is not None:
+            user.set_password(new_pass1)
+            user.save()
+        return Response({'status':'passwords should be upto 6 latters'},status=200)
+        
+        # except:
+        #     return Response({'status':'wrong password'},status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+        
+
+
 @api_view(['POST'])
 def logins(request):
     if request.method == 'POST':
@@ -176,8 +207,10 @@ def logins(request):
             log = authenticate(username=user.username,password=request.data['password'])
             if log is not None:
                 login(request,log)
+                return Response({'status':user.email}, status=200)
+            else:
+                return Response({'status': 'Email or Password is incorrect'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
-            return Response({'status':user.email}, status=200)
 
         except:
             return Response({'status': 'Email or Password is incorrect'},status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -209,7 +242,7 @@ def images_count(request):
         consumer = Consumers.objects.get(user=user)
         Count = ImageCount.objects.get(user=user)
         seo = SeoImage.objects.get(user=user)
-
+        
         period = 31
         day_added = datetime.timedelta(days=period)
         sesson_ex = consumer.updated.date() + day_added
@@ -220,6 +253,7 @@ def images_count(request):
             consumer.accountType = 'FREE'
             consumer.acessOngen = False
             consumer.acessOnseo = False
+            consumer.free_image_count = 0
             consumer.save()
       
         # print(consumer.updated.date())
@@ -262,7 +296,10 @@ def images_count(request):
                 consumer.acessOngen = False
                 consumer.save()
                 return Response({'status': 'YOUR LIMIT IS FINISHED,BUY A PLAN'},status=status.HTTP_406_NOT_ACCEPTABLE)
-    
+
+        consumer.free_image_count = Count.image_processed
+        consumer.save()
+        print(Count.image_processed)
         Count.save()
         return Response(status=200)
 
@@ -282,20 +319,24 @@ def seoimages(request):
         day_added = datetime.timedelta(days=period)
         sesson_ex = consumer.updated.date() + day_added
 
+        print(seo.count)
+
         current_time = datetime.datetime.now().date()
 
         if sesson_ex <= current_time:
             consumer.accountType = 'FREE'
             consumer.acessOngen = False
             consumer.acessOnseo = False
+            consumer.premium_image_count = 0
             consumer.save()
 
         if consumer.accountType == 'FREE':
                 return Response({'status': 'YOUR LIMIT IS FINISHED,BUY A PLAN'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if consumer.accountType == '1':
-            if Count.image_processed <=50:
-                Count.image_processed +=1
+            if seo.count <=50:
+                seo.count +=1
+                seo.save()
             elif Count.image_processed > 1000 and seo.count > 50:
                 consumer.accountType = 'FREE'
                 consumer.save()
@@ -305,8 +346,9 @@ def seoimages(request):
                 return Response({'status': 'YOUR LIMIT IS FINISHED,BUY A PLAN'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if consumer.accountType == '2':
-            if Count.image_processed <= 50:
-                Count.image_processed +=1
+            if seo.count <= 50:
+                seo.count +=1
+                seo.save()
             elif Count.image_processed > 5000 and seo.count > 100:
                 consumer.accountType = 'FREE'
                 consumer.save()
@@ -316,8 +358,9 @@ def seoimages(request):
                 return Response({'status': 'YOUR LIMIT IS FINISHED,BUY A PLAN'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if consumer.accountType == '3':
-            if Count.image_processed <= 200:
-                Count.image_processed +=1
+            if seo.count <= 200:
+                seo.count +=1
+                seo.save()
             elif Count.image_processed > 12000 and seo.count >200:
                 consumer.accountType = 'FREE'
                 consumer.save()
@@ -326,6 +369,11 @@ def seoimages(request):
                 consumer.save()
                 return Response({'status': 'YOUR LIMIT IS FINISHED,BUY A PLAN'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
+
+        consumer.premium_image_count = seo.count
+
+        consumer.save()
+        seo.save()
         Count.save()
         return Response(status=200)
 

@@ -15,5 +15,6 @@ urlpatterns = [
     path('create-checkout-session/<str:id>',views.create_payment,name="stripe"),
     path('<str:id>/landing',views.landing,name="landing"),
     path('webhook/stripe',views.my_webhook_view,name="stripe_webhook"),
-    path('seoimages',views.seoimages,name="seoimages")
+    path('seoimages',views.seoimages,name="seoimages"),
+    path('change_password',views.change_password,name='change_password')
 ]

@@ -13,8 +13,8 @@ class ConsumersSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.email')
     class Meta:
         model = Consumers
-        fields = ('id','paid','accountType','created',
-                'updated','user','acessOngen','acessOnseo')
+        fields = ('id','accountType','created','premium_image_count',
+                'updated','user','acessOngen','acessOnseo','free_image_count')
 
 class ImageCountSerializer(serializers.ModelSerializer):
     # for showing the email as a field
