@@ -1,4 +1,4 @@
-from .models import Consumers,ImageCount, Product,SeoImage
+from .models import Consumers,Product, VerifyCode
 from django.contrib import admin
 
 
@@ -10,6 +10,5 @@ class ConsumersAdmin(admin.ModelAdmin):
     list_filter = ['accountType','created']
 
 admin.site.register(Consumers,ConsumersAdmin)
-admin.site.register(ImageCount)
 admin.site.register(Product)
-admin.site.register(SeoImage)
+admin.site.register(VerifyCode)

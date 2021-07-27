@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--kp$)q$jh+uw9*v0rw@2e(q^p4zji7krjba1d3co7--19q$q*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','picengine.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1','picengine.herokuapp.com','localhost']
 
 
 # Application definition
@@ -147,6 +147,13 @@ REST_FRAMEWORK = {
 
 STRIPE_PUBLIC_KEY = "pk_test_51INwc9Ktmusr7YA2I9UKLZUxqFctZeM2gMpG7O0CwA54ViEK2IZ4NvjbI4JGF60GNpvIb4kZQPum8p1J9IxUzXwM00mXWZHzpg"
 STRIPE_SECRET_KEY = "sk_test_51INwc9Ktmusr7YA2Pr6Z6S3xeY6IAJNnnJ792PyfhaI8yMOqP5kCLWmTDo1TCirzZOEMH0ruiiFqyRYGj8SMBXwq00J1Jqqf7X"
-STRIPE_WEBHOOK_SECRET = "whsec_SJtvc6VLYjUPjcoSjBUfzXRuGgdDeKk7"
+STRIPE_WEBHOOK_SECRET = "whsec_kNAiWzMb0Vlt8cxRMbGZVpmC52PE9R7G"
 
 
+#email setup
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'taylor.mxrouting.net'
+EMAIL_HOST_USER = 'contact@picengine.io'
+EMAIL_HOST_PASSWORD = 'Engine@110'
+EMAIL_PORT = 587

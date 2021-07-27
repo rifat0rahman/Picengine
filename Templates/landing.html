@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Buy cool new product</title>
+    <title>Picengine</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
     <script src="https://js.stripe.com/v3/"></script>
 </head>
@@ -28,21 +28,16 @@
     }
 
     .cols .price b {
-        font-size: 19px !important;
+        font-size:45px !important;
         position: relative;
         top: 30%;
+        color: rgb(255, 156, 7);
     }
 
     .cols .price {
-        width: 100px;
-        height: 100px;
         padding: 5px;
-        margin: auto;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        border-radius: 90px;
-        background: linear-gradient(rgb(253, 187, 65), rgb(255, 145, 0));
-        box-shadow: 2px 2px 2px rgb(223, 222, 222);
+        margin-top: 50px;
+        margin-bottom: 50px;
     }
 
     .cols b {
@@ -52,8 +47,8 @@
     .cols {
         margin: 20px;
         text-align: center;
-        border: 1px solid rgb(230, 230, 230);
-        padding: 5px;
+        border: 1px solid rgba(255, 194, 62, 0.466);
+        padding:20px;
         border-radius: 15px;
         box-shadow: 2px 2px 1px whitesmoke;
         font-family: Arial, Helvetica, sans-serif;
@@ -71,13 +66,17 @@
 
                 <div class="cols">
                     <b>{{ product.name }}</b>
-                    <p>Use the app like a pro!</p>
+                    <p>Make your journey safe and smooth</p>
                     <div class="price">
                         <b>${{ product.product_price }}/m</b>
                     </div>
                     <div class="numprocess">
-                        <span>Number of downloads</span><br>
-                        <b>150</b><br>
+                        <span>Basic pressecing downloads</span><br>
+                        <b>{{product.basic_credits}}</b><br>
+                        <p></p>
+                        <span>Premium pressecing downloads</span><br>
+                        <b>{{product.premium_credits}}</b><br>
+                        <p></p>
                         <span>Features Limit</span><br>
                         <b>Limited</b>
                     </div>

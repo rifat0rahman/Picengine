@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from rest_framework.fields import CharField
-from . models import Consumers,ImageCount,SeoImage
+from . models import Consumers
 
 #user serializser
 class UserSerializer(serializers.ModelSerializer):
@@ -9,23 +8,19 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id','username','email')
 
+
 class ConsumersSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.email')
+
+    account_type = serializers.CharField(source='get_accountType_display')
+
     class Meta:
         model = Consumers
-        fields = ('id','accountType','created','premium_image_count',
-                'updated','user','acessOngen','acessOnseo','free_image_count')
+        fields = ('id','account_type','created',
+                'updated','user','acessOngen','acessOnseo',
+                'premium_image_count','basic_image_count',
+                'basic_credits','premium_credits'
+                )
 
-class ImageCountSerializer(serializers.ModelSerializer):
-    # for showing the email as a field
-    user = serializers.CharField(source='user.email')
-    class Meta:
-        model = ImageCount
-        fields = ('id','image_processed','updated','user')
 
-class SeoImageSerializer(serializers.ModelSerializer):
-    # for showing the email as a field
-    user = serializers.CharField(source='user.email')
-    class Meta:
-        model = SeoImage
-        fields = ('id','count','created','user')
+            
