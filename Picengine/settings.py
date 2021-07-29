@@ -145,10 +145,10 @@ REST_FRAMEWORK = {
 
 # stripe
 
+
 STRIPE_PUBLIC_KEY = "pk_live_51HYEbqHCHpH6CKxGPFmcN1Bw1AlsOiq3lIWLxTihmowtdik03VNKxpSu36bIubV1zkXDopfiMzMjDVkdteM1i6h7002VC0ykcA"
 STRIPE_SECRET_KEY = "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"
 STRIPE_WEBHOOK_SECRET = "whsec_umGv7RFix6mb0UTyftciTJZWdYD29JJ4"
-
 
 #email setup
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
