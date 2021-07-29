@@ -35,7 +35,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 @api_view(["GET", "POST"])
 def create_payment(request, id):
     if request.method == 'POST':
-        YOUR_DOMAIN = "http://localhost:8080/"  # frontend url
+        YOUR_DOMAIN = "https://picengine.io/"  # frontend url
 
         product = Product.objects.get(id=id)
         price = product.price
@@ -59,7 +59,7 @@ def create_payment(request, id):
                 "product_id": product.id
             },
             mode='payment',
-            success_url=YOUR_DOMAIN + 'profile/',
+            success_url=YOUR_DOMAIN + 'deshboard/',
             cancel_url=YOUR_DOMAIN + 'cancel/',
         )
         return JsonResponse({'id': checkout_session.id}, status=200)
@@ -127,10 +127,7 @@ def my_webhook_view(request):
 @api_view(['GET'])
 def home(request):
     endpoints = {
-        'login': 'http://127.0.0.1:8000/login',
-        'registration': 'http://127.0.0.1:8000/register',
-        'users': 'http://127.0.0.1:8000/users',
-        'consumers': 'http://127.0.0.1:8000/consumers',
+        'login': 'restricted',
     }
     return Response({"endpionts": endpoints})
 
@@ -167,6 +164,7 @@ def create_account(request):
     if request.method == 'POST':
         data = request.data
         email = data['email']
+        name = data['name']
         username = email
         password = data['password']
         code = data['code']
@@ -178,6 +176,7 @@ def create_account(request):
         if stored_code == code:
             print('hello')
             user = User(
+                first_name=name,
                 username=username,
                 email=email,
             )
@@ -194,10 +193,25 @@ def create_account(request):
         else:
             return Response({'status': 'wrong code,please correct this one'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+# change name
+@api_view(['POST'])
+def change_name(request):
+    if request.method == 'POST':
+        data = request.data
+        name = data['name']
+        email = data['email']
+
+        user = User.objects.get(email=email)
+        user.first_name = name
+        user.save()
+
+        return Response({'status':f'name has been changed to {name}'})
+
+
+
+
 
 # send verify code
-
-
 def verify_account(email):
     code = get_random_string(length=6, allowed_chars='1234567890')
 
@@ -361,7 +375,7 @@ def images_count(request):
             consumer.basic_credits -= 1
             consumer.basic_image_count += 1
             consumer.save()
-        elif consumer.besic_credits <= 0 and consumer.premium_credits <= 0:
+        elif consumer.basic_credits <= 0 and consumer.premium_credits <= 0:
             consumer.acessOngen = False
             consumer.acessOnseo = False
             consumer.accountType = 'FREE'

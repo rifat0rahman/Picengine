@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--kp$)q$jh+uw9*v0rw@2e(q^p4zji7krjba1d3co7--19q$q*h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','picengine.herokuapp.com','localhost']
+ALLOWED_HOSTS = ['127.0.0.1','45.76.143.188','localhost']
 
 
 # Application definition
@@ -135,7 +135,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # for api access domain
-CORS_ORIGIN_WHITELIST = ( 'http://localhost:8080','https://picengine.netlify.app','https://emailforsure.com' )
+CORS_ORIGIN_WHITELIST = ( 'http://localhost:8080','https://picengine.netlify.app','https://picengine.io' )
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -145,9 +145,9 @@ REST_FRAMEWORK = {
 
 # stripe
 
-STRIPE_PUBLIC_KEY = "pk_test_51INwc9Ktmusr7YA2I9UKLZUxqFctZeM2gMpG7O0CwA54ViEK2IZ4NvjbI4JGF60GNpvIb4kZQPum8p1J9IxUzXwM00mXWZHzpg"
-STRIPE_SECRET_KEY = "sk_test_51INwc9Ktmusr7YA2Pr6Z6S3xeY6IAJNnnJ792PyfhaI8yMOqP5kCLWmTDo1TCirzZOEMH0ruiiFqyRYGj8SMBXwq00J1Jqqf7X"
-STRIPE_WEBHOOK_SECRET = "whsec_kNAiWzMb0Vlt8cxRMbGZVpmC52PE9R7G"
+STRIPE_PUBLIC_KEY = "pk_live_51HYEbqHCHpH6CKxGPFmcN1Bw1AlsOiq3lIWLxTihmowtdik03VNKxpSu36bIubV1zkXDopfiMzMjDVkdteM1i6h7002VC0ykcA"
+STRIPE_SECRET_KEY = "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"
+STRIPE_WEBHOOK_SECRET = "whsec_umGv7RFix6mb0UTyftciTJZWdYD29JJ4"
 
 
 #email setup

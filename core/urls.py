@@ -23,6 +23,8 @@ urlpatterns = [
     path('change_email',views.change_email,name="change_email"),
     path('create_account',views.create_account,name="create_account"),
     path('update_email',views.update_email,name="update_email"),
+    path('change_name',views.change_name,name="change_name"),
+
 
 ]
 
