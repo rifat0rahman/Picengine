@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+import json 
+
+with open('/etc/config.json') as config_file:
+    config = json.load(config_file)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--kp$)q$jh+uw9*v0rw@2e(q^p4zji7krjba1d3co7--19q$q*h'
+SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','45.76.143.188','localhost']
+ALLOWED_HOSTS = ['127.0.0.1','45.76.143.188','localhost','app.picengine.io']
 
 
 # Application definition
@@ -146,14 +150,14 @@ REST_FRAMEWORK = {
 # stripe
 
 
-STRIPE_PUBLIC_KEY = "pk_live_51HYEbqHCHpH6CKxGPFmcN1Bw1AlsOiq3lIWLxTihmowtdik03VNKxpSu36bIubV1zkXDopfiMzMjDVkdteM1i6h7002VC0ykcA"
-STRIPE_SECRET_KEY = "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"
-STRIPE_WEBHOOK_SECRET = "whsec_umGv7RFix6mb0UTyftciTJZWdYD29JJ4"
+STRIPE_PUBLIC_KEY = config['STRIPE_PUBLIC_KEY']
+STRIPE_SECRET_KEY = config['STRIPE_SECRET_KEY']
+STRIPE_WEBHOOK_SECRET = config['STRIPE_WEBHOOK_SECRET']
 
 #email setup
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'taylor.mxrouting.net'
 EMAIL_HOST_USER = 'contact@picengine.io'
-EMAIL_HOST_PASSWORD = 'Engine@110'
+EMAIL_HOST_PASSWORD= config['EMAIL_PASSWORD']
 EMAIL_PORT = 587
