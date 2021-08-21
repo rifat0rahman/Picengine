@@ -1,6 +1,7 @@
 
 # imports from django
-from django.shortcuts import render
+from django.db.models.fields import EmailField
+from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
@@ -17,7 +18,7 @@ from rest_framework.response import Response
 
 # imports from my app
 from . serializers import UserSerializer, ConsumersSerializer
-from .models import Consumers, Product, VerifyCode
+from .models import Consumers, Product, VerifyCode, License
 
 
 # imports from stripe
@@ -76,6 +77,7 @@ def landing(request, id):
         'product': product,
     }
     return render(request, 'landing.html', context)
+
 
 
 # stripe webhooks, for tracking the pyment flow
@@ -159,6 +161,74 @@ def registration(request):
         return Response({'user': 'done'}, status=200)
 
 
+#________________________________forget_password__________________________#
+
+@api_view(['POST'])
+def forget_password(request):
+    if request.method == 'POST':
+        email = request.data['email']
+        password1 = request.data['password1']
+        password2 = request.data['password2']
+
+        if len(password1) < 6:
+            return Response({'status': 'password must be up to 6 latters'},
+                            status=status.HTTP_404_NOT_FOUND)
+        if password1 != password2:
+            return Response({'status': 'password should be same'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        user = User.objects.get(email=email)
+        user.set_password(password1)
+        user.save()
+
+        return Response({'status':'password changed , please login now!'})
+
+
+@api_view(['POST'])
+def forget_verify(request):
+    email = request.data['email']
+    code = request.data['code']
+    try:
+        verify = VerifyCode.objects.get(email=email,code=code)
+        return Response({'status': email}, status=200)
+    except:
+        return Response({'status': 'wrong code,please try again'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
+
+
+@api_view(['POST'])
+def forget_email(request):
+    if request.method == 'POST':
+        code = get_random_string(length=6, allowed_chars='1234567890')
+        email = request.data['email']
+        user = None
+        try:
+            user = User.objects.get(email=email)
+            account = VerifyCode.objects.filter(email=email)
+            if len(account):
+                account[0].code = code
+                account[0].save()
+            else:
+                account = VerifyCode(email=email, code=code)
+                account.save()
+        except:
+            return Response({'status': 'email does not exists'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        # email things
+        from_email = 'contact@picengine.io'
+        subject = 'Your temporary password for PicEngine'
+        body = f"<p>Hi {user.first_name},</p><p>We are sending you a temporary password to login. Please use it to login and change your password as soon as possible.</p><p>{code}</p><p>Let us know if you have any questions!</p><br><p>Thanks!</p><p>Team PicEngine</p>"
+
+        send_mail(subject, body,'PicEngine <contact@picengine.io>', [email], html_message=body)
+
+        return Response({'user': user.email})
+
+
+#_____________________________forget_pasaword_______________________#
+
+
+
 @api_view(['POST'])
 def create_account(request):
     if request.method == 'POST':
@@ -174,7 +244,6 @@ def create_account(request):
         print(verify_email.code)
         print(code)
         if stored_code == code:
-            print('hello')
             user = User(
                 first_name=name,
                 username=username,
@@ -187,13 +256,26 @@ def create_account(request):
             consumers = Consumers.objects.create(user=user)
             consumers.save()
 
+            # send email
+            # email things
+            from_email = 'contact@picengine.io'
+            subject = 'Welcome to PicEngine'
+            body = f"Hi {user.first_name},<p></p>We're thrilled you've taken the leap and signed up for our service.<p></p><p>Now that your account is active, please take a look at all the awesome tools and let us know if you have any questions.</p><p>We'll be sending you a couple of emails later this week, so be on the lookout!</p><p>We hope to see you reach your goals with us soon!</p><br><p>Cheers,</p><p>Team PicEngine</p>"
+
+            if email:
+                send_mail(subject, body,'PicEngine <contact@picengine.io>',
+                          [email], html_message=body)
+                print('mail sent')
+
             print('user created')
 
             return Response({'user': user.email})
         else:
             return Response({'status': 'wrong code,please correct this one'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+
 # change name
+
 @api_view(['POST'])
 def change_name(request):
     if request.method == 'POST':
@@ -205,37 +287,35 @@ def change_name(request):
         user.first_name = name
         user.save()
 
-        return Response({'status':f'name has been changed to {name}'})
-
-
-
+        return Response({'status': f'name has been changed to {name}'})
 
 
 # send verify code
 def verify_account(email):
+
     code = get_random_string(length=6, allowed_chars='1234567890')
+    try:
+        account = VerifyCode.objects.filter(email=email)
+        if len(account):
+            account[0].code = code
+            account[0].save()
+        else:
+            verify_code = VerifyCode(email=email, code=code)
+            verify_code.save()
 
-    account = VerifyCode.objects.filter(email=email)
+        # email things
+        from_email = 'contact@picengine.io'
+        subject = 'PicEngine account activation'
+        body = f"Hi there,<p></p>Thank you for signing up with us, we're excited to have you onboard. Please use this code to activate your account<p></p><br>{code}</b><br/><p>In-case you have any questions, please reply to this email and we, at PicEngine, will be happy to help you with all your queries. Also, if you did not initiate this request, you do not need to do anything.</p><br><p>Thanks,</p><p>Team PicEngine</p>"
 
-    if len(account):
-        account[0].code = code
-        account[0].save()
-    else:
-        verify_code = VerifyCode(email=email, code=code)
-        verify_code.save()
-   
+        if email:
+            send_mail(subject, body,'PicEngine <contact@picengine.io>', [email], html_message=body)
+            print('mail sent')
+        print(code)
 
-    # email things
-    from_email = 'contact@picengine.io'
-
-    body = f'<b>{code}</b> <span>This is your account verification code for <b>Picengine.io</b></span>,<i>please do not share this code<i/>'
-
-    if email:
-        send_mail('subject', body, from_email, [email], html_message=body)
-        print('mail sent')
-    print(code)
-
-    return Response({'done'})
+        return Response({'done'})
+    except:
+        pass
 
 
 # rifat123456
@@ -263,7 +343,8 @@ def change_password(request):
             user.save()
 
             return Response({'status': 'password has been changed!'}, status=200)
-
+        else:
+            return Response({'status': 'current password is wrong'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 # email changing view
 @api_view(['POST'])
@@ -281,6 +362,7 @@ def change_email(request):
         return Response(status=200)
 
 
+
 @api_view(["POST"])
 def update_email(request):
     if request.method == 'POST':
@@ -288,7 +370,6 @@ def update_email(request):
         new_email = request.data['new_email']
         user = User.objects.get(email=email)
         code = request.data['code']
-
 
         account = VerifyCode.objects.get(email=new_email)
 
@@ -306,10 +387,10 @@ def logins(request):
     if request.method == 'POST':
         try:
             user = User.objects.get(email=request.data['email'])
-          
+
             log = authenticate(username=user.username,
                                password=request.data['password'])
-     
+
             if log is not None:
                 login(request, log)
                 return Response({'status': user.email}, status=200)
@@ -343,15 +424,15 @@ def logOut(request):
     return Response({'logout': 'logout'})
 
 
+
 # every download is counting here,
 @api_view(['POST'])
 def images_count(request):
     if request.method == 'POST':
 
         user = User.objects.get(email=request.data['token'])
-
         consumer = Consumers.objects.get(user=user)
-
+        license = None
         # expired time
         period = consumer.durations
         day_added = datetime.timedelta(days=period)
@@ -359,14 +440,26 @@ def images_count(request):
         current_time = datetime.datetime.now().date()
 
         if sesson_ex <= current_time:
-            consumer.accountType = 'FREE'
-            consumer.acessOngen = False
-            consumer.acessOnseo = False
-            consumer.basic_credits = 0
-            consumer.premium_credits = 0
-            consumer.basic_image_count = 0
-            consumer.premium_image_count = 0
-            consumer.save()
+            try:
+                license = License.objects.get(user=user)
+                if consumer.accountType == 'LTD standard':
+                    consumer.basic_credits = license.basic_credits
+                    consumer.premium_credits = license.premium_credits
+                    consumer.basic_image_count = 0
+                    consumer.premium_image_count = 0
+                    consumer.durations = license.times
+                    consumer.save()
+            except:
+                pass
+            else:
+                consumer.accountType = 'FREE'
+                consumer.acessOngen = False
+                consumer.acessOnseo = False
+                consumer.basic_credits = 0
+                consumer.premium_credits = 0
+                consumer.basic_image_count = 0
+                consumer.premium_image_count = 0
+                consumer.save()
 
         # expired ends here
 
@@ -394,11 +487,14 @@ def images_count(request):
     return Response(status=200)
 
 
+
+
 @api_view(['POST'])
 def seoimages(request):
     if request.method == 'POST':
         user = User.objects.get(email=request.data['token'])
         consumer = Consumers.objects.get(user=user)
+        license = None
 
         # expired time
         period = consumer.durations
@@ -406,15 +502,30 @@ def seoimages(request):
         sesson_ex = consumer.updated.date() + day_added
         current_time = datetime.datetime.now().date()
 
+        
+
+
         if sesson_ex <= current_time:
-            consumer.accountType = 'FREE'
-            consumer.acessOngen = False
-            consumer.acessOnseo = False
-            consumer.basic_credits = 0
-            consumer.premium_credits = 0
-            consumer.basic_image_count = 0
-            consumer.premium_image_count = 0
-            consumer.save()
+            try:
+                license = License.objects.get(user=user)
+                if consumer.accountType == 'LTD standard':
+                    consumer.basic_credits = license.basic_credits
+                    consumer.premium_credits = license.premium_credits
+                    consumer.basic_image_count = 0
+                    consumer.premium_image_count = 0
+                    consumer.durations = license.times
+                    consumer.save()
+            except:
+                pass
+            else:
+                consumer.accountType = 'FREE'
+                consumer.acessOngen = False
+                consumer.acessOnseo = False
+                consumer.basic_credits = 0
+                consumer.premium_credits = 0
+                consumer.basic_image_count = 0
+                consumer.premium_image_count = 0
+                consumer.save()
 
         # expired ends here
 
@@ -442,6 +553,8 @@ def seoimages(request):
     return Response(status=200)
 
 
+
+
 # email sending setup here
 @api_view(['POST'])
 def send_email(request):
@@ -452,15 +565,117 @@ def send_email(request):
         address = data['email']
 
         details = data['details']
-        from_email = 'contact@picengine.io'
+        # from_email = 
 
-        subject = 'Custom Plan for Picengine.io'
-        body = f'<b>{name}</b> <span>wants to buy a custom plan for <b>Picengine.io</b></span><br><p></p><b>Name: {name}</b><br><b>Email: <i> {address}</i></b><p></p><h4>Descriptions:</h4> <p>{details}</p>'
+        subject = 'Custom Pricing Enquiry'
+        body = f'</p> Hey PicEngine Team,<p><p>I am writing to inquire about custom pricing. I want to know how much it would be for my business and if there are any special deals available for people with a high number of processing.</p><p>My details are listed below:</p><p>Email:{address}</p><p>{details}</p><br><p>Thanks,</p><p>{name}</p>'
 
         if address:
-            send_mail(subject, body, from_email, [
+
+             send_mail(subject, body,'PicEngine <contact@picengine.io>', [
                       'info@picengine.io'], html_message=body)
 
         return Response({'done'}, status=200)
 
     return Response(status=200)
+
+
+
+
+# email sending setup here
+@api_view(['POST'])
+def send_email(request):
+    if request.method == 'POST':
+        data = request.data
+
+        name = data['name']
+        address = data['email']
+
+        details = data['details']
+        # from_email = 
+
+        subject = 'Custom Pricing Enquiry'
+        body = f'</p> Hey PicEngine Team,<p><p>I am writing to inquire about custom pricing. I want to know how much it would be for my business and if there are any special deals available for people with a high number of processing.</p><p>My details are listed below:</p><p>Email:{address}</p><p>{details}</p><br><p>Thanks,</p><p>{name}</p>'
+
+        if address:
+
+             send_mail(subject, body,'PicEngine <contact@picengine.io>', [
+                      'info@picengine.io'], html_message=body)
+
+        return Response({'done'}, status=200)
+
+    return Response(status=200)
+
+# help center
+# email sending setup here
+@api_view(['POST'])
+def contact_us(request):
+    if request.method == 'POST':
+        data = request.data
+
+        name = data['name']
+        address = data['email']
+        details = data['details']
+
+        subject = data['subject']
+
+        body = f'</p> Hey PicEngine Team,<p><p>I am writing to inquire an issue.</p><p>My details are listed below:</p><p>Email:{address}</p><p>{details}</p><br><p>Thanks,</p><p>{name}</p>'
+
+        if address:
+
+             send_mail(subject, body,'PicEngine <contact@picengine.io>', [
+                      'info@picengine.io'], html_message=body)
+
+        return Response({'done'}, status=200)
+
+    return Response(status=200)
+
+
+
+
+
+
+
+@api_view(['POST'])
+def license(request):
+    data = request.data
+    email = data['email']
+    license_code = data['license_code']
+
+    try:
+        user = User.objects.get(email=email)
+        consumer = Consumers.objects.get(user=user)
+
+        license = License.objects.get(license_code=license_code)
+        license.user = user
+        license.save()
+
+        #set the consumers
+        consumer.accountType = "5"
+        consumer.basic_credits = license.basic_credits
+        consumer.premium_credits = license.premium_credits
+        consumer.durations = license.times
+        consumer.basic_image_count = 0
+        consumer.premium_image_count = 0
+        consumer.acessOnseo = True
+        consumer.acessOngen = True
+        
+        consumer.save()
+        return Response({'status': 'License is activated. check the dashboard'}, status=200)
+    except:
+        return Response({'status': 'License code has expired'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+
+
+
+
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def create_license(request,number):
+    for i in range(int(number)):
+        license = License.objects.create()
+        license.save()
+    
+    return redirect('/admin/core/license/')

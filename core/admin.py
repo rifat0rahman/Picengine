@@ -1,4 +1,4 @@
-from .models import Consumers,Product, VerifyCode
+from .models import Consumers,Product, VerifyCode,License
 from django.contrib import admin
 
 
@@ -9,6 +9,12 @@ class ConsumersAdmin(admin.ModelAdmin):
     search_fields = ['user__email','user__username']
     list_filter = ['accountType','created']
 
+class LicensesAdmin(admin.ModelAdmin):
+    list_display = ['license_code','user']
+    list_filter = ['created']
+
+
 admin.site.register(Consumers,ConsumersAdmin)
 admin.site.register(Product)
 admin.site.register(VerifyCode)
+admin.site.register(License,LicensesAdmin)

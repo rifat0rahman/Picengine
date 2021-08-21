@@ -22,5 +22,4 @@ class ConsumersSerializer(serializers.ModelSerializer):
                 'basic_credits','premium_credits'
                 )
 
-
             
